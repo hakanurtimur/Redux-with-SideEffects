@@ -1,10 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { uiActions } from "./ui";
+
 
 const cartSlicer = createSlice({
   name: "cart",
-  initialState: { items: [], totalQuantity: 0 },
+  initialState: { items: [], totalQuantity: 0, changed: false },
   reducers: {
+    replaceCart(state, action) {
+        state.items = action.payload.items;
+        state.totalQuantity = action.payload.totalQuantity;
+    },
     addItemToCart(state, action) {
       const newItem = action.payload;
 
@@ -26,6 +30,7 @@ const cartSlicer = createSlice({
           existingCartItem.totalPrice + newItem.price;
       }
       state.totalQuantity++;
+      state.changed= true;
     },
     removeItemFromCart(state, action) {
       const id = action.payload;
@@ -40,54 +45,11 @@ const cartSlicer = createSlice({
           existingCartItem.totalPrice - existingCartItem.price;
       }
       state.totalQuantity--;
+      state.changed= true;
     },
   },
 });
 
-export const sendRequest = (cart) => {
-  return async (dispatch) => {
-    dispatch(
-      uiActions.showNotification({
-        status: "pending",
-        title: "Sending",
-        message: "Sending data...",
-      })
-    );
-
-    const sendRequestFunc = async () => {
-      const response = await fetch(
-        "https://react-http-3a15e-default-rtdb.firebaseio.com/books.json",
-        {
-          method: "PUT",
-          body: JSON.stringify(cart),
-          headers: { "content-type": "application-js" },
-        }
-      );
-      if (!response.ok) {
-        throw new Error("A problem occured!");
-      }
-    };
-
-    try {
-        await sendRequestFunc();
-        dispatch(
-            uiActions.showNotification({
-              status: "success",
-              title: "Succes",
-              message: "Succesfully sended!",
-            })
-          );
-    }catch(error) {
-        dispatch(
-            uiActions.showNotification({
-              status: "error",
-              title: "Error",
-              message: "A problem occured!",
-            })
-          )
-    }
-  };
-};
 
 
 
